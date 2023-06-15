@@ -1,4 +1,4 @@
-package com.edgar.ebay.bidding.models;
+package com.edgar.ebay.bidding.models.enums;
 
 public enum CategoryType {
 
