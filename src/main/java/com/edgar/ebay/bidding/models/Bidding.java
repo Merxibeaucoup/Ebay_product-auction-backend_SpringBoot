@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.edgar.ebay.bidding.security.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -33,6 +34,7 @@ public class Bidding {
 	private User user; /* user placing bid  -> user can place many bids*/
 	
 	@ManyToOne(cascade = CascadeType.ALL)
+	@JsonIgnore
 	private Product product; /* product bidding on  -> product can have many bids */
 	
 	private BigDecimal bid; /* bid placed */

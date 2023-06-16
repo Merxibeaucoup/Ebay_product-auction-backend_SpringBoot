@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.edgar.ebay.bidding.exceptions.AuctionHasEndedException;
+import com.edgar.ebay.bidding.exceptions.BidIsLowException;
 import com.edgar.ebay.bidding.exceptions.ProductWithIdDoesntExistException;
 import com.edgar.ebay.bidding.exceptions.UserWithIdDoesntExistException;
 import com.edgar.ebay.bidding.models.Bidding;
@@ -28,21 +31,42 @@ public class BiddingService {
 	private final AppUserRepository userRepository;
 	
 	
-	public Bidding makeBidOffer(BidRequest bidRequest) {
-		
-		Product product = productRepository.findById(bidRequest.getProductId())
-				.orElseThrow(()-> new ProductWithIdDoesntExistException("product with id :: "+bidRequest.getProductId()+" doesnt exist"));
-		
-		User user = userRepository.findById(bidRequest.getUserId())
-				.orElseThrow(()-> new UserWithIdDoesntExistException(" user with id :: "+ bidRequest.getUserId()+ " doesnt exist"));
-		
-		BigDecimal highestBid = product.getBids().stream().map(Bidding::getBid).max(Comparator.naturalOrder()).orElse(product.getStatringBidPrice());
-		
+	@Transactional
+	public Bidding makeBidOffer(Long productId, BidRequest bidRequest, User user) {
+			
 		Bidding bid = new Bidding();
 		
-		//not done finish bidding !!!
+		Product product = productRepository.findById(productId)
+				.orElseThrow(()-> new ProductWithIdDoesntExistException("product with id :: "+productId+" doesnt exist"));
 		
-		return biddingRepository.save(bid);	
+		User bidder = userRepository.findById(user.getId())
+				.orElseThrow(()-> new UserWithIdDoesntExistException(" user with id :: "+user.getId()+ " doesnt exist"));
+		
+		BigDecimal highestBid = product.getBids().stream().map(Bidding::getBid).max(Comparator.naturalOrder()).orElse(product.getStatringBidPrice());
+	
+		if(product.getIsAuctionEnded() == true) {
+			throw new AuctionHasEndedException(" cant bid on product, auction has aleady ended");
+		}
+		
+		if(bidRequest.getBidAmount().compareTo(highestBid) == 1 ) {
+			product.setWinnigBid(bidRequest.getBidAmount());
+			product.setNumberOfBids(product.getNumberOfBids()+1);
+			product.getBids().add(bid);
+			
+			product.getBidders().add(bidder);
+			
+			product.setNumberOfBidders(product.getBidders().size());
+			
+			bid.setProduct(product);
+			bid.setUser(bidder);
+			bid.setBid(bidRequest.getBidAmount());	
+			
+			productRepository.save(product);
+			return biddingRepository.save(bid);	
+		}
+		else 
+			throw new BidIsLowException("Bid higher ! current Highest Bid price :: "+ highestBid);
+	
 	}
 
 }

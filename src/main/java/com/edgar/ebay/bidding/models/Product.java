@@ -3,11 +3,13 @@ package com.edgar.ebay.bidding.models;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import com.edgar.ebay.bidding.models.enums.ShippingStatus;
 import com.edgar.ebay.bidding.security.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -73,11 +75,13 @@ public class Product {
 	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<Bidding> bids;
 
-//	@OneToMany(cascade = CascadeType.ALL) will fix later 
-//	private Set<User> bidders;
+	@OneToMany(cascade = CascadeType.ALL) 
+	private Set<User> bidders;
 
+	@Nullable
 	private Integer numberOfBidders;
-
+	
+	@Nullable
 	private Integer numberOfBids;
 	
 	private BigDecimal winnigBid;
