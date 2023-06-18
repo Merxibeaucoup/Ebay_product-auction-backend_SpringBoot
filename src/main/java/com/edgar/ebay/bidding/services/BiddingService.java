@@ -51,11 +51,13 @@ public class BiddingService {
 		if(bidRequest.getBidAmount().compareTo(highestBid) == 1 ) {
 			product.setWinnigBid(bidRequest.getBidAmount());
 			product.setNumberOfBids(product.getNumberOfBids()+1);
-			product.getBids().add(bid);
-			
-			product.getBidders().add(bidder);
-			
+			product.getBids().add(bid);	
+			product.getBidders().add(bidder);	
 			product.setNumberOfBidders(product.getBidders().size());
+			
+			/* will fix with dto later */
+			product.setWinner(bidder);
+			product.setWinnerName(bidder.getFirstname());
 			
 			bid.setProduct(product);
 			bid.setUser(bidder);
